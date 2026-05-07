@@ -3,10 +3,13 @@ const express = require('express');
 const connectDatabase = require('./config/database');
 const Aluno = require('./models/Aluno');
 
+const limiter= require('./config/ratelimit');
+
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(limiter);
 
 // Rota inicial
 app.get('/', (req, res) => {
