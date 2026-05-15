@@ -46,42 +46,81 @@ app.post('/alunos', async (req, res) => {
   }
 });
 
+app.post('/alunos', async (req, res) => {
+  try {
+    const { nome, curso } = req.body;
+
+  
+    if (!nome || !curso) {
+      return res.status(400).json({
+        mensagem: 'Os campos nome e curso são obrigatórios.',
+      });
+    }
+
+
+    const novoAluno = await Aluno.create({ nome, curso });
+
+    res.status(201).json(novoAluno);
+
+  } catch (error) {
+    res.status(500).json({
+      mensagem: 'Erro ao cadastrar aluno.',
+      erro: error.message,
+    });
+  }
+});
+
 app.put('/alunos/:id', async (req, res) => {
   try {
+    const { id } = req.params;
+    const { nome, curso } = req.body;
+
+    if (!nome || !curso) {
+      return res.status(400).json({ mensagem: 'Campos obrigatórios faltando.' });
+    }
+
     const alunoAtualizado = await Aluno.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
+      id,
+      { nome, curso },
+      { new: true, runValidators: true }
     );
 
-    res.json({
-      mensagem: 'Aluno atualizado com sucesso!',
-      aluno: alunoAtualizado,
-    });
+    if (!alunoAtualizado) {
+      return res.status(404).json({ mensagem: 'Aluno não encontrado.' });
+    }
+
+    res.status(200).json(alunoAtualizado);
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       mensagem: 'Erro ao atualizar aluno.',
       erro: error.message,
     });
   }
 });
 
-
 app.delete('/alunos/:id', async (req, res) => {
   try {
-    await Aluno.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
-    res.json({
-      mensagem: 'Aluno deletado com sucesso!',
+    const alunoExcluido = await Aluno.findByIdAndDelete(id);
+
+    if (!alunoExcluido) {
+      return res.status(404).json({ mensagem: 'Aluno não encontrado.' });
+    }
+
+    res.status(200).json({ 
+      mensagem: 'Aluno removido com sucesso!',
+      aluno: alunoExcluido 
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       mensagem: 'Erro ao deletar aluno.',
       erro: error.message,
     });
   }
 });
 
+ 
 // 🚀 Iniciar servidor
 async function startServer() {
   try {
